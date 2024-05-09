@@ -1,0 +1,304 @@
+---
+title: "EV"
+author: "Shiva Rasouli"
+date: "2024-04-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Read library
+```{r}
+library(readr)
+library(dplyr)
+```
+
+# Read data
+```{r}
+EV <- read_csv("EV.csv")
+# Remove the first 18 columns
+EV <- EV[ , -c(1:18)]
+EV <- EV[ , -c(12:17)]
+EV <- EV[ , -c(14:16)]
+
+```
+#Rename columns' name
+```{r}
+colnames(EV) <- c("Age", "Gender", "Smartphone_Prof", "Location_Privacy", "Filters_Comb", "DC_Fast_Charging", "Regular_Charging", "Price", "Distance", "Availability", "Amenities", "Satisfaction", "Recome")
+# Remove rows that have empty values
+EV <- EV[-c(1, 2, 4, 5), ]
+write.csv(EV, "Cleaned_EV_Data.csv", row.names = FALSE)
+#View(EV)
+```
+#convert data to numeric
+```{r}
+
+# Convert other categorical variables to factors 
+EV$Gender <- as.factor(EV$Gender)
+EV$Smartphone_Prof <- as.factor(EV$Smartphone_Prof)
+
+# Define a function to convert Likert scale responses to numeric
+convert_likert_to_numeric <- function(x) {
+  factor(x, levels = c("Very Easy", "Easy", "Neutral", "Difficult", "Very Difficult"))
+}
+
+# Apply this function to each Likert scale column
+EV$DC_Fast_Charging <- as.numeric(convert_likert_to_numeric(EV$DC_Fast_Charging))
+EV$Regular_Charging <- as.numeric(convert_likert_to_numeric(EV$Regular_Charging))
+EV$Price <- as.numeric(convert_likert_to_numeric(EV$Price))
+EV$Distance <- as.numeric(convert_likert_to_numeric(EV$Distance))
+EV$Availability <- as.numeric(convert_likert_to_numeric(EV$Availability))
+EV$Amenities <- as.numeric(convert_likert_to_numeric(EV$Amenities))
+
+# Create a mapping from categorical to numeric
+# satisfaction_levels <- c("Extremely dissatisfied", "Somewhat dissatisfied", "Neutral", "Somewhat satisfied", "Extremely satisfied")
+# satisfaction_mapping <- setNames(seq_along(satisfaction_levels), satisfaction_levels)
+
+# Apply the mapping to the Satisfaction column
+# EV$Satisfaction <- satisfaction_mapping[EV$Satisfaction]
+
+
+```
+
+#DC_Fast_Charging
+```{r}
+library(ggplot2)
+library(scales)  # For percent_format()
+
+EV$DC_Fast_Charging <- factor(EV$DC_Fast_Charging, 
+                              levels = 1:5,
+                              labels = c("Very Difficult", "Difficult", "Neutral", "Easy", "Very Easy"))
+
+# If you have NA values, you'll want to remove them or replace them before plotting
+EV <- EV[!is.na(EV$DC_Fast_Charging), ]
+
+# Now, create your bar plot
+
+DC<-ggplot(EV, aes(x=DC_Fast_Charging, y=..count../sum(..count..))) +
+  geom_bar(aes(fill = "skyblue"), color="skyblue", width = 0.5) +
+  scale_fill_identity() +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  scale_x_discrete(drop = FALSE) +  # Ensure all levels are included
+  geom_text(aes(label=sprintf("%.1f%%", ..count../sum(..count..)*100)),
+            stat='count', vjust=-0.5, position=position_dodge(width=0.5)) +
+  xlab("DC Fast Charging") +
+  ylab("Percentage") +
+  ggtitle("Distribution of Responses for Regular Charging") +
+  theme_minimal()
+ggsave("DC.png", plot = DC, dpi = 300, width = 12, height = 8, units = "in")
+
+
+```
+#Regular Chrging
+```{r}
+
+EV$Regular_Charging <- factor(EV$Regular_Charging, 
+                              levels = 1:5,
+                              labels = c("Very Difficult", "Difficult", "Neutral", "Easy", "Very Easy"))
+
+# If you have NA values, you'll want to remove them or replace them before plotting
+EV <- EV[!is.na(EV$Regular_Charging), ]
+
+# Now, create your bar plot
+Regular<-ggplot(EV, aes(x=Regular_Charging, y=..count../sum(..count..))) +
+  geom_bar(aes(fill = "skyblue"), color="skyblue", width = 0.5) +
+  scale_fill_identity() +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  scale_x_discrete(drop = FALSE) +  # Ensure all levels are included
+  geom_text(aes(label=sprintf("%.1f%%", ..count../sum(..count..)*100)),
+            stat='count', vjust=-0.5, position=position_dodge(width=0.5)) +
+  xlab("Regular Charging") +
+  ylab("Percentage") +
+  ggtitle("Distribution of Responses for Regular Charging") +
+  theme_minimal()
+ggsave("Regular.png", plot = Regular, dpi = 300, width = 12, height = 8, units = "in")
+
+```
+#Price
+```{r}
+EV$Price <- factor(EV$Price, 
+                              levels = 1:5,
+                              labels = c("Very Difficult", "Difficult", "Neutral", "Easy", "Very Easy"))
+
+# If you have NA values, you'll want to remove them or replace them before plotting
+EV <- EV[!is.na(EV$Price), ]
+
+# Now, create your bar plot
+price<-ggplot(EV, aes(x=Price, y=..count../sum(..count..))) +
+  geom_bar(aes(fill = "skyblue"), color="skyblue", width = 0.5) +
+  scale_fill_identity() +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  scale_x_discrete(drop = FALSE) +  # Ensure all levels are included
+  geom_text(aes(label=sprintf("%.1f%%", ..count../sum(..count..)*100)),
+            stat='count', vjust=-0.5, position=position_dodge(width=0.5)) +
+  xlab("Price") +
+  ylab("Percentage") +
+  ggtitle("Distribution of Responses for Price of Charging") +
+  theme_minimal()
+ggsave("price.png", plot = price, dpi = 300, width = 12, height = 8, units = "in")
+
+```
+#Distance
+```{r}
+EV$Distance <- factor(EV$Distance, 
+                              levels = 1:5,
+                              labels = c("Very Difficult", "Difficult", "Neutral", "Easy", "Very Easy"))
+
+# If you have NA values, you'll want to remove them or replace them before plotting
+EV <- EV[!is.na(EV$Distance), ]
+
+# Now, create your bar plot
+distance<-ggplot(EV, aes(x=Distance, y=..count../sum(..count..))) +
+  geom_bar(aes(fill = "skyblue"), color="skyblue", width = 0.5) +
+  scale_fill_identity() +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  scale_x_discrete(drop = FALSE) +  # Ensure all levels are included
+  geom_text(aes(label=sprintf("%.1f%%", ..count../sum(..count..)*100)),
+            stat='count', vjust=-0.5, position=position_dodge(width=0.5)) +
+  xlab("Distance") +
+  ylab("Percentage") +
+  ggtitle("Distribution of Responses for Distance to Station") +
+  theme_minimal()
+ggsave("distance.png", plot = distance, dpi = 300, width = 12, height = 8, units = "in")
+
+
+```
+#Availability
+```{r}
+EV$Availability <- factor(EV$Availability, 
+                              levels = 1:5,
+                              labels = c("Very Difficult", "Difficult", "Neutral", "Easy", "Very Easy"))
+
+# If you have NA values, you'll want to remove them or replace them before plotting
+EV <- EV[!is.na(EV$Availability), ]
+
+# Now, create your bar plot
+availability<-ggplot(EV, aes(x=Availability, y=..count../sum(..count..))) +
+  geom_bar(aes(fill = "skyblue"), color="skyblue", width = 0.5) +
+  scale_fill_identity() +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  scale_x_discrete(drop = FALSE) +  # Ensure all levels are included
+  geom_text(aes(label=sprintf("%.1f%%", ..count../sum(..count..)*100)),
+            stat='count', vjust=-0.5, position=position_dodge(width=0.5)) +
+  xlab("Availability") +
+  ylab("Percentage") +
+  ggtitle("Distribution of Responses for Availability of Station") +
+  theme_minimal()
+ggsave("availability.png", plot = availability, dpi = 300, width = 12, height = 8, units = "in")
+
+```
+#Amenities
+```{r}
+
+EV$Amenities <- factor(EV$Amenities, 
+                              levels = 1:5,
+                              labels = c("Very Difficult", "Difficult", "Neutral", "Easy", "Very Easy"))
+
+# If you have NA values, you'll want to remove them or replace them before plotting
+EV <- EV[!is.na(EV$Amenities), ]
+
+# Now, create your bar plot
+amenity<-ggplot(EV, aes(x=Amenities, y=..count../sum(..count..))) +
+  geom_bar(aes(fill = "skyblue"), color="skyblue", width = 0.5) +
+  scale_fill_identity() +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  scale_x_discrete(drop = FALSE) +  # Ensure all levels are included
+  geom_text(aes(label=sprintf("%.1f%%", ..count../sum(..count..)*100)),
+            stat='count', vjust=-0.5, position=position_dodge(width=0.5)) +
+  xlab("Availability") +
+  ylab("Percentage") +
+  ggtitle("Distribution of Responses for Amenities in Station") +
+  theme_minimal()
+ggsave("amenity.png", plot = amenity, dpi = 300, width = 12, height = 8, units = "in")
+
+```
+
+
+
+#Regression
+```{r}
+# # Fit a linear regression model
+# model <- lm(Satisfaction ~  DC_Fast_Charging+Regular_Charging+Price+Distance+Availability+Amenities+Age+Gender, data = EV) 
+# # Summarize the model
+# summary(model)
+```
+#Chi Square test
+```{r,warning=FALSE}
+age <- chisq.test(EV$Satisfaction, EV$Age)
+print(age)
+gender <- chisq.test(EV$Satisfaction, EV$Gender)
+print(gender)
+Smartphone_Prof <- chisq.test(EV$Satisfaction, EV$Smartphone_Prof)
+print(Smartphone_Prof)
+price <- chisq.test(EV$Satisfaction, EV$Price)
+print(price)
+amenity <- chisq.test(EV$Satisfaction, EV$Amenities)
+print(amenity)
+availability <- chisq.test(EV$Satisfaction, EV$Availability)
+print(availability)
+distance <- chisq.test(EV$Satisfaction, EV$Distance)
+print(distance)
+Regular_Charging <- chisq.test(EV$Satisfaction, EV$Regular_Charging)
+print(Regular_Charging)
+DC<- chisq.test(EV$Satisfaction, EV$DC_Fast_Charging)
+print(DC)
+recom<- chisq.test(EV$Recome, EV$Satisfaction)
+print(recom)
+
+```
+#Bonferroni
+```{r}
+contingency_table<-table(EV$Recome, EV$Satisfaction)
+# Significance level
+sig <- 0.05
+#companions
+chisq.test(contingency_table, correct=FALSE)$stdres
+sigAdj <- sig/(nrow(contingency_table)*ncol (contingency_table))
+qnorm(sigAdj/2)
+
+```
+#Demo
+```{r}
+table(EV$Age)/10
+table(EV$Gender)/10
+table(EV$Smartphone_Prof)/10
+
+```
+
+# Lollipop chart
+```{r}
+
+library(ggpubr)
+library(dplyr)
+df <- data.frame(
+  category = c(rep("Age",2),rep("Gender",2), rep("Profeciency",3)),
+  #Measures = c("Female", "Male", "Advanced", "SCR", "RSP", "GSR", "ECG", "Other", "Speed", "Speed Variability","Lane Deviation", "Lateral Position", "Collision","Acceleration","Traffic Rules", "Likert Like", "Stress Questionnaire", "Anger Questionnaie"),
+  Measures = c("25-34", "35-44","Female", "Male", "Advanced", "Expert", "Intermediate"),
+   Average_Satisfaction = c(3.62,5,3.57,4.67,4,4.6,4)
+)
+df$category <- factor(df$category, levels = c("Age", "Gender", "Profeciency"))
+ggdotchart(df, x = "Measures", y = "Average_Satisfaction",
+           color = "category",  
+           palette = c("skyblue", "darkorange", "darkcyan"), 
+           sorting = "descending",                       
+           add = "segments", 
+           add.params = list(color = "category", size = 2),
+           rotate = TRUE,                                
+           group = "category",                               
+           dot.size = 7,                                
+           label = round(df$Average_Satisfaction), 
+           font.label = list(color = "white", size = 9, 
+                             vjust = 0.6), 
+           ggtheme = theme_bw()+theme(axis.text.x = element_text(face = "bold",size=10)))+
+  scale_y_continuous(breaks = NULL)+xlab("")+ylab("Average satisfaction")+labs(color = NULL)+ theme(axis.text.y = element_text(face = "bold"), 
+  axis.text.x = element_text(face = "bold"))+ guides(color = guide_legend(reverse = TRUE))
+
+ggsave("Lollipop.png", dpi = 400, width = 6, height = 4, units = "in")
+```
+
+
+
+
